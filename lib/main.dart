@@ -55,7 +55,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   const SizedBox(height: 12),
                   ElevatedButton(
                     onPressed: () {
-                      context.read<PostProvider>().fetchPosts();
+                      context.read<PostProvider>().fetchPosts(force: true);
                     },
                     child: Text("Retry"),
                   ),
@@ -65,12 +65,21 @@ class _MyHomePageState extends State<MyHomePage> {
           }
           return RefreshIndicator(
             onRefresh: () {
-              return context.read<PostProvider>().fetchPosts();
+              return context.read<PostProvider>().fetchPosts(force: true);
             },
             child: ListView.builder(
+              physics: AlwaysScrollableScrollPhysics(),
               itemCount: provider.posts.length,
               itemBuilder: (context, index) {
-                return ListTile(title: Text(provider.posts[index]));
+                final post = provider.posts[index];
+                return ListTile(
+                  title: Text(post.title),
+                  subtitle: Text(
+                    post.body,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                );
               },
             ),
           );
