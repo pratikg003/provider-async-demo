@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:provider_async_demo/providers/post_provider.dart';
+import 'package:provider_async_demo/features/auth/provider/auth_provider.dart';
+import 'package:provider_async_demo/features/auth/widgets/auth_gate.dart';
 
 void main() {
-  runApp(ChangeNotifierProvider(create: (_) => PostProvider(), child: MyApp()));
+  runApp(
+    MultiProvider(
+      providers: [ChangeNotifierProvider(create: (_) => AuthProvider())],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -12,79 +18,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Provider Async',
+      title: 'API Demo',
       debugShowCheckedModeBanner: false,
-      home: const MyHomePage(),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  @override
-  void initState() {
-    super.initState();
-    Future.microtask(() {
-      context.read<PostProvider>().fetchPosts();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final provider = context.watch<PostProvider>();
-
-    return Scaffold(
-      appBar: AppBar(title: Text("Async Provider Demo")),
-      body: Builder(
-        builder: (context) {
-          if (provider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (provider.error != null) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(provider.error!),
-                  const SizedBox(height: 12),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<PostProvider>().fetchPosts(force: true);
-                    },
-                    child: Text("Retry"),
-                  ),
-                ],
-              ),
-            );
-          }
-          return RefreshIndicator(
-            onRefresh: () {
-              return context.read<PostProvider>().fetchPosts(force: true);
-            },
-            child: ListView.builder(
-              physics: AlwaysScrollableScrollPhysics(),
-              itemCount: provider.posts.length,
-              itemBuilder: (context, index) {
-                final post = provider.posts[index];
-                return ListTile(
-                  title: Text(post.title),
-                  subtitle: Text(
-                    post.body,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                );
-              },
-            ),
-          );
-        },
-      ),
+      home: AuthGate(),
     );
   }
 }
