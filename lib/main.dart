@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:provider_async_demo/core/network/api_client.dart';
 import 'package:provider_async_demo/features/auth/provider/auth_provider.dart';
 import 'package:provider_async_demo/features/auth/widgets/auth_gate.dart';
 
@@ -17,10 +18,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'API Demo',
-      debugShowCheckedModeBanner: false,
-      home: AuthGate(),
+    return Consumer<AuthProvider>(
+      builder: (context, auth, _) {
+        ApiClient().updateToken(auth.token);
+
+        return MaterialApp(debugShowCheckedModeBanner: false, home: AuthGate());
+      },
     );
   }
 }
