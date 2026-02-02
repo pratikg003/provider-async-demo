@@ -2,28 +2,43 @@ import 'package:flutter/material.dart';
 import 'package:provider_async_demo/features/models/post.dart';
 import 'package:provider_async_demo/features/service/post_service.dart';
 
+enum LoadState {
+  idle,
+  loading,
+  success,
+  empty,
+  error,
+}
+  
 class PostProvider extends ChangeNotifier {
   final PostService _service = PostService();
-  bool _isLoading = false;
-  String? _error;
-  List<Post> _posts = [];
 
-  bool get isLoading => _isLoading;
-  String? get error => _error;
-  List<Post> get posts => _posts;
+  LoadState state = LoadState.idle;
+  String? error;
+  List<Post> posts = [];
+
+  // bool get isLoading => _isLoading;
+  // String? get error => _error;
+  // List<Post> get posts => _posts;
 
  Future<void> fetchPosts({bool force = false}) async {
-  _isLoading = true;
-  _error = null;
+  state = LoadState.loading;
+  error = null;
   notifyListeners();
 
   try{
-    _posts = await _service.fetchPosts();
+    posts = await _service.fetchPosts();
+
+    if(posts.isEmpty){
+      state = LoadState.empty;
+    } else {
+      state = LoadState.success;
+    }
   } catch (e) {
-    _error = e.toString();
+    error = e.toString();
+    state = LoadState.error;
   }
 
-  _isLoading = false;
   notifyListeners();
 }
 

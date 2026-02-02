@@ -22,55 +22,46 @@ class _PostsScreenState extends State<PostsScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<PostProvider>();
+    switch (provider.state) {
+      case LoadState.loading:
+        return Scaffold(body: const Center(child: CircularProgressIndicator()));
 
-    if (provider.isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    if (provider.error != null) {
-      return Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(provider.error!),
-              const SizedBox(height: 12),
-              ElevatedButton(
-                onPressed: () {
-                  context.read<PostProvider>().fetchPosts(force: true);
-                },
-                child: const Text("Retry"),
-              ),
-            ],
+      case LoadState.error:
+        return Scaffold(
+          body: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(provider.error ?? 'Something went wrong!'),
+                SizedBox(height: 15),
+                ElevatedButton(
+                  onPressed: () {
+                    context.read<PostProvider>().fetchPosts(force: true);
+                  },
+                  child: Text('Retry'),
+                ),
+              ],
+            ),
           ),
-        ),
-      );
-    }
+        );
+      case LoadState.empty:
+        return Scaffold(body: Center(child: Text('No posts available!')));
+      case LoadState.success:
+        return Scaffold(
+          body: ListView.builder(
+            itemCount: provider.posts.length,
+            itemBuilder: (_, index) {
+              final post = provider.posts[index];
+              return ListTile(
+                title: Text(post.title),
+                subtitle: Text(post.body),
+              );
+            },
+          ),
+        );
 
-    return Scaffold(
-      appBar: AppBar(title: const Text("Async Provider Demo")),
-      body: RefreshIndicator(
-        onRefresh: () {
-          return context.read<PostProvider>().fetchPosts(force: true);
-        },
-        child: ListView.builder(
-          physics: const AlwaysScrollableScrollPhysics(),
-          itemCount: provider.posts.length,
-          itemBuilder: (context, index) {
-            final post = provider.posts[index];
-            return ListTile(
-              title: Text(post.title),
-              subtitle: Text(
-                post.body,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            );
-          },
-        ),
-      ),
-    );
+      default:
+        return const SizedBox.shrink();
+    }
   }
 }
