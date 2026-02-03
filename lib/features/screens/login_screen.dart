@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:provider_async_demo/core/theme/theme_provider.dart';
+import 'package:provider_async_demo/core/validator/form_validator.dart';
 import 'package:provider_async_demo/features/auth/provider/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -46,30 +48,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 controller: _emailController,
                 decoration: InputDecoration(labelText: 'Email'),
                 keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Email is required';
-                  }
-                  if (!value.contains('@')) {
-                    return 'Enter a valid email';
-                  }
-                  return null;
-                },
+                validator: FormValidator.email,
               ),
               const SizedBox(height: 20),
               TextFormField(
                 controller: _passwordController,
                 decoration: InputDecoration(labelText: 'password'),
                 obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Password is required';
-                  }
-                  if (value.length < 6) {
-                    return 'Minimum 6 characters';
-                  }
-                  return null;
-                },
+                validator: FormValidator.password,
               ),
               const SizedBox(height: 16),
               ElevatedButton(
@@ -77,6 +63,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: auth.isLoading
                     ? CircularProgressIndicator()
                     : Text('Login'),
+              ),
+              SwitchListTile(
+                title: const Text('Dark Mode'),
+                value: context.watch<ThemeProvider>().isDarkMode,
+                onChanged: (_) {
+                  context.read<ThemeProvider>().toggleTheme();
+                },
               ),
             ],
           ),
